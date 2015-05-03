@@ -9,16 +9,6 @@ buildscript {
     }
 }
 
-configurations {
-    provided
-}
-
-sourceSets {
-    main.compileClasspath += configurations.provided
-    test.compileClasspath += configurations.provided
-    test.runtimeClasspath += configurations.provided
-}
-
 version = '1.0'
 
 repositories {
