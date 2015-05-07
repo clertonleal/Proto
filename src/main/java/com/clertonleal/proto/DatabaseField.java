@@ -1,4 +1,4 @@
-package com.clertonleal.protocursor;
+package com.clertonleal.proto;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -6,6 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DatabaseField {
 
-    String fieldName();
+    String columnName();
 
 }
