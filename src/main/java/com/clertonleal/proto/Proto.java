@@ -47,13 +47,12 @@ public class Proto {
     }
 
     private static void setFieldInObject(Object o, Field field, Cursor cursor) {
-        String columnName = field.getName();
-
         final DatabaseField annotation = field.getAnnotation(DatabaseField.class);
-        if (annotation != null) {
-            annotation.columnName();
+        if (annotation == null) {
+            return;
         }
 
+        String columnName = annotation.columnName();
         final int fieldIndex = cursor.getColumnIndex(columnName);
         if (fieldIndex == INVALID_FIELD) {
             Log.e(TAG, "Dot find column to to field: " + field.getName());

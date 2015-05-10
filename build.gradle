@@ -1,4 +1,6 @@
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -13,6 +15,73 @@ version = '1.0'
 
 repositories {
     mavenCentral()
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from tasks.javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+signing {
+    sign configurations.archives
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+group = "com.clertonleal"
+archivesBaseName = "Proto"
+version = "1.0"
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Proto'
+                packaging 'jar'
+                description 'A simple library to serialize Android cursors in objects.'
+                url 'https://github.com/clertonleal/Proto'
+
+                scm {
+                    connection 'scm:https://github.com/clertonleal/Proto.git'
+                    developerConnection 'scm:https://github.com/clertonleal/Proto.git'
+                    url 'scm:https://github.com/clertonleal/Proto.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The MIT License'
+                        url 'http://opensource.org/licenses/MIT'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'clertonleal'
+                        name 'Clêrton Leal'
+                        email 'clertonleal@gmail.com'
+                    }
+                }
+            }
+        }
+    }
 }
 
 dependencies {
