@@ -16,6 +16,14 @@ public class Proto {
 
     private static final Configuration CONFIGURATION = new Configuration();
 
+    private Proto() {}
+
+    /**
+     * @param cursor Cursor in position to be serialized
+     * @param clazz Class of object to be serialized
+     * @param <T> Generic type of object to be serialized
+     * @return Serialized object or null when a instantiation error occurs
+     */
     public static <T> T object(Cursor cursor, Class<T> clazz) {
         T instance;
 
@@ -36,6 +44,12 @@ public class Proto {
         return null;
     }
 
+    /**
+     * @param cursor Cursor in position to be serialized
+     * @param clazz Class of object to be serialized
+     * @param <T> Generic type of object to be serialized
+     * @return List with the serialized objects that were correctly instantiated
+     */
     public static <T> List<T> list(Cursor cursor, Class<T> clazz) {
         final List<T> list =  new ArrayList<>();
 
@@ -64,6 +78,9 @@ public class Proto {
         return list;
     }
 
+    /**
+     * @return The configuration object of Proto
+     */
     public static Configuration configuration() {
         return CONFIGURATION;
     }
