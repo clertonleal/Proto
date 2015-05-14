@@ -12,6 +12,7 @@ import java.util.List;
 public class Proto {
 
     private static final String TAG = Proto.class.getName();
+
     private static final int INVALID_FIELD = -1;
 
     private static final Configuration CONFIGURATION = new Configuration();
@@ -85,7 +86,9 @@ public class Proto {
         return CONFIGURATION;
     }
 
-    private static <T> T serializeCursor(Cursor cursor, Class<T> clazz) throws InstantiationException, IllegalAccessException {
+    private static <T> T serializeCursor(Cursor cursor, Class<T> clazz)
+            throws InstantiationException, IllegalAccessException {
+
         final T instance = clazz.newInstance();
 
         for(Field field : getFields(clazz)) {
@@ -104,7 +107,7 @@ public class Proto {
         final String columnName = annotation.columnName();
         final int fieldIndex = cursor.getColumnIndex(columnName);
         if (fieldIndex == INVALID_FIELD) {
-            Log.e(TAG, "Dot find column to to field: " + field.getName());
+            Log.e(TAG, "Don't find column to to field: " + field.getName());
             return;
         }
 
@@ -129,7 +132,7 @@ public class Proto {
             try {
                 field.set(o, result);
             } catch (IllegalAccessException e) {
-                Log.e(TAG, "Error to set value: " + result + " in field: " + field.getName(), e);
+                Log.e(TAG, "Error to set value \"" + result + "\" in field \"" + field.getName() + "\".", e);
             }
         }
     }
@@ -145,5 +148,4 @@ public class Proto {
 
         return fields;
     }
-
 }

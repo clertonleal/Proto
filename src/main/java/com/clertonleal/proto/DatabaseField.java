@@ -7,5 +7,4 @@ import java.lang.annotation.RetentionPolicy;
 public @interface DatabaseField {
 
     String columnName();
-
 }
