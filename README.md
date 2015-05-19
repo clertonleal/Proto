@@ -34,3 +34,10 @@ By default Proto close the cursors passed by parameter after the serialization, 
 ```java
 Proto.configuration().closeCursor(true);
 ```
+
+### Using with Proguard
+
+Add the follow line:
+```
+-keepattributes \*Annotation\*
+````
