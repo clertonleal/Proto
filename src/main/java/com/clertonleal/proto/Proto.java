@@ -104,7 +104,10 @@ public class Proto {
         final String columnName = annotation.columnName();
         final int fieldIndex = cursor.getColumnIndex(columnName);
         if (fieldIndex == INVALID_FIELD) {
-            Log.e(TAG, "Dot find column to to field: " + field.getName());
+            return;
+        }
+
+        if (cursor.isNull(fieldIndex)) {
             return;
         }
 
