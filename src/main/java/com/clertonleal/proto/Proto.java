@@ -23,6 +23,33 @@ public class Proto {
      * @param cursor Cursor in position to be serialized
      * @param clazz Class of object to be serialized
      * @param <T> Generic type of object to be serialized
+     * @param closeCursor Boolean to check if cursors should be closed
+     * @return Serialized object or null when a instantiation error occurs
+     */
+    public static <T> T object(Cursor cursor, Class<T> clazz, boolean closeCursor) {
+        T instance;
+
+        try {
+            instance = serializeCursor(cursor, clazz);
+
+            if (closeCursor) {
+                cursor.close();
+            }
+
+            return instance;
+        } catch (InstantiationException e) {
+            Log.e(TAG, "Error to instantiate a object of " + clazz.getName(), e);
+        } catch (IllegalAccessException e) {
+            Log.e(TAG, "The default constructor of " + clazz.getName() + " is not visible", e);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param cursor Cursor in position to be serialized
+     * @param clazz Class of object to be serialized
+     * @param <T> Generic type of object to be serialized
      * @return Serialized object or null when a instantiation error occurs
      */
     public static <T> T object(Cursor cursor, Class<T> clazz) {
@@ -41,8 +68,42 @@ public class Proto {
         } catch (IllegalAccessException e) {
             Log.e(TAG, "The default constructor of " + clazz.getName() + " is not visible", e);
         }
-
         return null;
+    }
+
+    /**
+     * @param cursor Cursor in position to be serialized
+     * @param clazz Class of object to be serialized
+     * @param <T> Generic type of object to be serialized
+     * @param closeCursor Boolean to check if cursors should be closed
+     * @return List with the serialized objects that were correctly instantiated
+     */
+    public static <T> List<T> list(Cursor cursor, Class<T> clazz, boolean closeCursor) {
+        final List<T> list =  new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                T instance = null;
+
+                try {
+                    instance = serializeCursor(cursor, clazz);
+                } catch (InstantiationException e) {
+                    Log.e(TAG, "Error to instantiate a object of " + clazz.getName(), e);
+                } catch (IllegalAccessException e) {
+                    Log.e(TAG, "The default constructor of " + clazz.getName() + " is not visible", e);
+                }
+
+                if (instance != null) {
+                    list.add(instance);
+                }
+            } while (cursor.moveToNext());
+        }
+
+        if (closeCursor) {
+            cursor.close();
+        }
+
+        return list;
     }
 
     /**
@@ -78,6 +139,7 @@ public class Proto {
 
         return list;
     }
+
 
     /**
      * @return The configuration object of Proto
