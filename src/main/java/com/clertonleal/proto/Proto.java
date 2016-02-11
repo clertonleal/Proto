@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class Proto {
@@ -78,15 +79,17 @@ public class Proto {
      * @param closeCursor Boolean to check if cursors should be closed
      * @return List with the serialized objects that were correctly instantiated
      */
-    public static <T> List<T> list(Cursor cursor, Class<T> clazz, boolean closeCursor) {
+    public static <T> List<T> list(Cursor cursor, Class<T> clazz, Boolean closeCursor) {
         final List<T> list =  new ArrayList<>();
 
         if (cursor.moveToFirst()) {
+            List<Field> fields = getFields(clazz);
+            HashMap<String, Integer> columnsMap = cursorMapColumns(cursor, fields);
             do {
                 T instance = null;
 
                 try {
-                    instance = serializeCursor(cursor, clazz);
+                    instance = serializeCursor(cursor, clazz, fields, columnsMap);
                 } catch (InstantiationException e) {
                     Log.e(TAG, "Error to instantiate a object of " + clazz.getName(), e);
                 } catch (IllegalAccessException e) {
@@ -98,8 +101,11 @@ public class Proto {
                 }
             } while (cursor.moveToNext());
         }
-
-        if (closeCursor) {
+        if (closeCursor == null) {
+            if (configuration().isClosingCursor()) {
+                cursor.close();
+            }
+        } else if (closeCursor) {
             cursor.close();
         }
 
@@ -113,33 +119,8 @@ public class Proto {
      * @return List with the serialized objects that were correctly instantiated
      */
     public static <T> List<T> list(Cursor cursor, Class<T> clazz) {
-        final List<T> list =  new ArrayList<>();
-
-        if (cursor.moveToFirst()) {
-            do {
-                T instance = null;
-
-                try {
-                    instance = serializeCursor(cursor, clazz);
-                } catch (InstantiationException e) {
-                    Log.e(TAG, "Error to instantiate a object of " + clazz.getName(), e);
-                } catch (IllegalAccessException e) {
-                    Log.e(TAG, "The default constructor of " + clazz.getName() + " is not visible", e);
-                }
-
-                if (instance != null) {
-                    list.add(instance);
-                }
-            } while (cursor.moveToNext());
-        }
-
-        if (configuration().isClosingCursor()) {
-            cursor.close();
-        }
-
-        return list;
+        return list(cursor, clazz, null);
     }
-
 
     /**
      * @return The configuration object of Proto
@@ -150,31 +131,54 @@ public class Proto {
 
     private static <T> T serializeCursor(Cursor cursor, Class<T> clazz)
             throws InstantiationException, IllegalAccessException {
+        return serializeCursor(cursor, clazz, getFields(clazz), null);
+    }
 
+    private static <T> T serializeCursor(Cursor cursor, Class<T> clazz, List<Field> fields,
+                                         HashMap<String, Integer> columnsMap)
+            throws InstantiationException, IllegalAccessException {
         final T instance = clazz.newInstance();
-
-        for(Field field : getFields(clazz)) {
-            setFieldInObject(instance, field, cursor);
+        if (columnsMap == null) {
+            columnsMap = cursorMapColumns(cursor, fields);
+        }
+        for(Field field : fields) {
+            setFieldInObject(instance, field, cursor, columnsMap);
         }
 
         return instance;
     }
 
-    private static void setFieldInObject(Object o, Field field, Cursor cursor) {
+    private static HashMap<String, Integer> cursorMapColumns(Cursor cursor, List<Field> fields) {
+        HashMap<String, Integer> columnMap = new HashMap<>();
+        for (Field field: fields) {
+            final DatabaseField annotation = field.getAnnotation(DatabaseField.class);
+            if (annotation == null) {
+                continue;
+            }
+            final String columnName = annotation.columnName();
+            final int fieldIndex = cursor.getColumnIndex(columnName);
+            columnMap.put(columnName, fieldIndex);
+        }
+        return columnMap;
+    }
+
+    private static void setFieldInObject(Object o, Field field, Cursor cursor,
+                                         HashMap<String, Integer> columnMap) {
         final DatabaseField annotation = field.getAnnotation(DatabaseField.class);
         if (annotation == null) {
             return;
         }
 
         final String columnName = annotation.columnName();
-        final int fieldIndex = cursor.getColumnIndex(columnName);
-        if (fieldIndex == INVALID_FIELD) {
+        final Integer fieldIndex = columnMap.get(columnName);
+        if (fieldIndex == null) {
             Log.e(TAG, "Don't find column to to field: " + field.getName());
             return;
         }
 
         Object result = null;
         final Class clazz = field.getType();
+
         if (clazz == Integer.class || clazz == Integer.TYPE) {
             result = cursor.getInt(fieldIndex);
         } else if (clazz == Long.class || clazz == Long.TYPE) {
