@@ -14,8 +14,6 @@ public class Proto {
 
     private static final String TAG = Proto.class.getName();
 
-    private static final int INVALID_FIELD = -1;
-
     private static final Configuration CONFIGURATION = new Configuration();
 
     private Proto() {}
@@ -79,7 +77,7 @@ public class Proto {
      * @param closeCursor Boolean to check if cursors should be closed
      * @return List with the serialized objects that were correctly instantiated
      */
-    public static <T> List<T> list(Cursor cursor, Class<T> clazz, Boolean closeCursor) {
+    public static <T> List<T> list(Cursor cursor, Class<T> clazz, boolean closeCursor) {
         final List<T> list =  new ArrayList<>();
 
         if (cursor.moveToFirst()) {
