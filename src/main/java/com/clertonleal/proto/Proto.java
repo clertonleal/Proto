@@ -101,11 +101,7 @@ public class Proto {
                 }
             } while (cursor.moveToNext());
         }
-        if (closeCursor == null) {
-            if (configuration().isClosingCursor()) {
-                cursor.close();
-            }
-        } else if (closeCursor) {
+        if (closeCursor) {
             cursor.close();
         }
 
@@ -119,7 +115,7 @@ public class Proto {
      * @return List with the serialized objects that were correctly instantiated
      */
     public static <T> List<T> list(Cursor cursor, Class<T> clazz) {
-        return list(cursor, clazz, null);
+        return list(cursor, clazz, configuration().isClosingCursor());
     }
 
     /**
