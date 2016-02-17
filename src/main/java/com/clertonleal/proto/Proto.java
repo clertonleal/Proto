@@ -151,7 +151,9 @@ public class Proto {
             }
             final String columnName = annotation.columnName();
             final int fieldIndex = cursor.getColumnIndex(columnName);
-            columnMap.put(columnName, fieldIndex);
+            if (fieldIndex != -1) {
+                columnMap.put(columnName, fieldIndex);
+            }
         }
         return columnMap;
     }
